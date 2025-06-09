@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [        {
+            "name": "Launch Backend API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Backend: Build",
+            "program": "${workspaceFolder}/backend/VoidBitzChat.Api/bin/Debug/net8.0/VoidBitzChat.Api.dll",
+            "args": ["--urls", "http://localhost:5027"],
+            "cwd": "${workspaceFolder}/backend/VoidBitzChat.Api",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5027"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": "Attach to Backend API",
+            "type": "coreclr",
+            "request": "attach"
+        },
+         {
+            "name": "npm: dev",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
+            "cwd": "${workspaceFolder}/frontend",
+            "console": "integratedTerminal"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch Full Stack (Debug)",
+            "configurations": [
+                "Launch Backend API",
+                "npm: dev"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            },
+            "stopAll": true
+        }
+    ]
+}
