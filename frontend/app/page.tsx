@@ -18,12 +18,20 @@ export default function Home() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleSessionUpdated = (updatedSession: ChatSession) => {
+    // Update the selected session if it's the one that was updated
+    if (selectedSession && selectedSession.id === updatedSession.id) {
+      setSelectedSession(updatedSession);
+    }
+  };
+
   return (
     <div className="flex bg-gray-100 dark:bg-gray-900 h-screen">
       <ChatSidebar
         selectedSessionId={selectedSession?.id || null}
         onSessionSelect={handleSessionSelect}
         onRefreshSessions={refreshTrigger}
+        onSessionUpdate={handleSessionUpdated}
       />
       <ChatInterface
         selectedSession={selectedSession}
