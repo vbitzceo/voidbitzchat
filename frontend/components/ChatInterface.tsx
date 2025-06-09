@@ -5,6 +5,7 @@ import { ChatSession, ChatSessionDetail, ChatMessage } from '@/types/chat';
 import { ChatApiService } from '@/lib/api';
 import ChatMessageComponent from './ChatMessage';
 import ChatInput from './ChatInput';
+import TypingIndicator from './TypingIndicator';
 import { Bot, AlertCircle } from 'lucide-react';
 
 interface ChatInterfaceProps {
@@ -15,6 +16,7 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ selectedSession, onSessionUpdate }: ChatInterfaceProps) {
   const [sessionDetail, setSessionDetail] = useState<ChatSessionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,11 +28,10 @@ export default function ChatInterface({ selectedSession, onSessionUpdate }: Chat
       setSessionDetail(null);
     }
   }, [selectedSession]);
-
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive or when waiting for response
   useEffect(() => {
     scrollToBottom();
-  }, [sessionDetail?.messages]);
+  }, [sessionDetail?.messages, isWaitingForResponse]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,6 +59,7 @@ export default function ChatInterface({ selectedSession, onSessionUpdate }: Chat
 
     try {
       setError(null);
+      setIsWaitingForResponse(true);
       
       // Add user message to UI immediately
       const userMessage: ChatMessage = {
@@ -93,6 +95,8 @@ export default function ChatInterface({ selectedSession, onSessionUpdate }: Chat
         ...prev,
         messages: prev.messages.filter(m => !m.id.startsWith('temp-'))
       } : null);
+    } finally {
+      setIsWaitingForResponse(false);
     }
   };
 
@@ -124,14 +128,20 @@ export default function ChatInterface({ selectedSession, onSessionUpdate }: Chat
   }
 
   return (
-    <div className="flex flex-col flex-1 h-full">
-      {/* Chat Header */}
+    <div className="flex flex-col flex-1 h-full">      {/* Chat Header */}
       <div className="bg-white dark:bg-gray-800 p-4 border-gray-200 dark:border-gray-700 border-b">
         <h1 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
           {selectedSession.title}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">
-          {sessionDetail?.messageCount || 0} messages
+          {isWaitingForResponse ? (
+            <span className="flex items-center gap-1">
+              <span className="bg-blue-500 rounded-full w-2 h-2 animate-pulse"></span>
+              AI is responding...
+            </span>
+          ) : (
+            `${sessionDetail?.messageCount || 0} messages`
+          )}
         </p>
       </div>
 
@@ -153,19 +163,19 @@ export default function ChatInterface({ selectedSession, onSessionUpdate }: Chat
             <p className="text-gray-500 dark:text-gray-400">
               No messages yet. Start the conversation!
             </p>
-          </div>
-        ) : (
-          sessionDetail?.messages.map((message) => (
-            <ChatMessageComponent key={message.id} message={message} />
-          ))
+          </div>        ) : (
+          <>
+            {sessionDetail?.messages.map((message) => (
+              <ChatMessageComponent key={message.id} message={message} />
+            ))}
+            {isWaitingForResponse && <TypingIndicator />}
+          </>
         )}
         <div ref={messagesEndRef} />
-      </div>
-
-      {/* Chat Input */}
+      </div>      {/* Chat Input */}
       <ChatInput
         onSendMessage={handleSendMessage}
-        disabled={isLoading}
+        disabled={isLoading || isWaitingForResponse}
         placeholder="Type your message..."
       />
     </div>
