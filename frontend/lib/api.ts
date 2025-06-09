@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ChatSession, ChatSessionDetail, ChatMessage, CreateSessionRequest, ChatMessageRequest } from '@/types/chat';
+import { ChatSession, ChatSessionDetail, ChatMessage, CreateSessionRequest, ChatMessageRequest, UpdateSessionRequest } from '@/types/chat';
 
 // API base URL - should be configurable via environment variables
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5027/api';
@@ -88,6 +88,19 @@ export class ChatApiService {
     } catch (error) {
       console.error('Failed to delete session:', error);
       throw new Error('Failed to delete chat session');
+    }
+  }
+
+  /**
+   * Update a chat session title
+   */
+  static async updateSession(sessionId: string, request: UpdateSessionRequest): Promise<ChatSession> {
+    try {
+      const response = await apiClient.put<ChatSession>(`/chat/sessions/${sessionId}`, request);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update session:', error);
+      throw new Error('Failed to update chat session');
     }
   }
 

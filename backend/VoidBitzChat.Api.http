@@ -1,6 +1,44 @@
 @VoidBitzChat.Api_HostAddress = http://localhost:5027
+@sessionId = 00000000-0000-0000-0000-000000000000
 
-GET {{VoidBitzChat.Api_HostAddress}}/weatherforecast/
+### Health Check
+GET {{VoidBitzChat.Api_HostAddress}}/api/status
 Accept: application/json
+
+### Get all chat sessions
+GET {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions
+Accept: application/json
+
+### Create a new chat session with custom title
+POST {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions
+Content-Type: application/json
+
+{
+  "title": "Planning Weekend Trip"
+}
+
+### Get specific chat session with messages
+GET {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}
+Accept: application/json
+
+### Update chat session title
+PUT {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}
+Content-Type: application/json
+
+{
+  "title": "Updated Chat Title"
+}
+
+### Send a message to chat session
+POST {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}/messages
+Content-Type: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "message": "Hello! How are you today?"
+}
+
+### Delete chat session
+DELETE {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}
 
 ###

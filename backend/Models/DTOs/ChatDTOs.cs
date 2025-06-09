@@ -31,6 +31,14 @@ public class CreateSessionRequest
 }
 
 /// <summary>
+/// Request DTO for updating a chat session
+/// </summary>
+public class UpdateSessionRequest
+{
+    public string Title { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// Response DTO for chat sessions
 /// </summary>
 public class ChatSessionResponse

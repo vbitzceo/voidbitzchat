@@ -129,6 +129,28 @@ To change the API URL, edit `frontend/lib/api.ts` and modify the `BASE_URL` cons
 
 For production, use Azure Managed Identity instead of API keys.
 
+## Application Features
+
+### Chat Session Management
+The application supports comprehensive chat session management:
+
+- **Custom Chat Titles**: Users can create chats with meaningful, descriptive names
+- **Rename Functionality**: Existing chats can be renamed using the edit icon in the sidebar
+- **Session Persistence**: All chat titles and conversation history are stored in the database
+- **User Context Isolation**: Each session maintains its own conversation context
+
+### User Interface
+- **New Chat Modal**: Prompts users to enter a custom title when creating new chats
+- **Rename Modal**: Allows editing of existing chat titles with validation
+- **Visual Feedback**: Hover states and loading indicators for better UX
+- **Responsive Design**: Works across desktop and mobile devices
+
+### API Endpoints for Chat Management
+- `POST /api/chat/sessions` - Create with custom title
+- `PUT /api/chat/sessions/{id}` - Update session title
+- `GET /api/chat/sessions` - List user sessions with titles
+- `DELETE /api/chat/sessions/{id}` - Remove sessions
+
 ## Troubleshooting
 
 ### Common Issues

@@ -16,6 +16,7 @@ public interface IChatService
     Task<ChatSessionDetailResponse?> GetSessionAsync(Guid sessionId, string? userId = null);
     Task<ChatSessionResponse> CreateSessionAsync(string title, string? userId = null);
     Task<bool> DeleteSessionAsync(Guid sessionId, string? userId = null);
+    Task<ChatSessionResponse?> UpdateSessionAsync(Guid sessionId, string title, string? userId = null);
 }
 
 public class ChatService : IChatService
@@ -199,6 +200,34 @@ public class ChatService : IChatService
     public async Task<bool> DeleteSessionAsync(Guid sessionId, string? userId = null)
     {
         return await _chatRepository.DeleteSessionAsync(sessionId, userId);
+    }
+
+    public async Task<ChatSessionResponse?> UpdateSessionAsync(Guid sessionId, string title, string? userId = null)
+    {
+        var updated = await _chatRepository.UpdateSessionAsync(sessionId, title, userId);
+        if (!updated)
+        {
+            return null;
+        }
+
+        // Return the updated session
+        var session = await _chatRepository.GetSessionWithMessagesAsync(sessionId, userId);
+        if (session == null)
+        {
+            return null;
+        }
+
+        return new ChatSessionResponse
+        {
+            Id = session.Id,
+            Title = session.Title,
+            CreatedAt = session.CreatedAt,
+            UpdatedAt = session.UpdatedAt,
+            MessageCount = session.Messages.Count,
+            LastMessage = session.Messages
+                .OrderByDescending(m => m.Timestamp)
+                .FirstOrDefault()?.Content
+        };
     }
 
     private static int EstimateTokenCount(string text)

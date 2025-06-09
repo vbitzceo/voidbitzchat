@@ -4,7 +4,8 @@ ASP.NET Core Web API backend for the VoidBitz Chat application.
 
 ## Features
 
-- **Chat Management**: Create, retrieve, and delete chat sessions
+- **Chat Management**: Create, retrieve, update, and delete chat sessions with custom titles
+- **Session Naming**: Full CRUD operations for session titles and organization
 - **Message Processing**: Send messages and receive AI-powered responses
 - **Persistence**: Entity Framework Core with SQL Server for chat history
 - **AI Integration**: Azure OpenAI integration via Semantic Kernel
@@ -15,8 +16,9 @@ ASP.NET Core Web API backend for the VoidBitz Chat application.
 
 ### Chat Sessions
 - `GET /api/chat/sessions` - Get all user sessions
-- `POST /api/chat/sessions` - Create a new session
+- `POST /api/chat/sessions` - Create a new session with custom title
 - `GET /api/chat/sessions/{id}` - Get session with messages
+- `PUT /api/chat/sessions/{id}` - Update session title
 - `DELETE /api/chat/sessions/{id}` - Delete a session
 
 ### Messages
@@ -68,3 +70,36 @@ Update `appsettings.Development.json`:
 ## Testing
 
 Use the included `VoidBitzChat.Api.http` file with VS Code REST Client extension to test the API endpoints.
+
+### Example API Usage
+
+1. **Create a named chat session:**
+   ```http
+   POST /api/chat/sessions
+   Content-Type: application/json
+   
+   {
+     "title": "Planning Weekend Trip"
+   }
+   ```
+
+2. **Rename an existing chat:**
+   ```http
+   PUT /api/chat/sessions/{sessionId}
+   Content-Type: application/json
+   
+   {
+     "title": "Updated Chat Title"
+   }
+   ```
+
+3. **Send a message:**
+   ```http
+   POST /api/chat/sessions/{sessionId}/messages
+   Content-Type: application/json
+   
+   {
+     "sessionId": "{sessionId}",
+     "message": "Hello! How are you today?"
+   }
+   ```

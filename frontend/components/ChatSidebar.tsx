@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ChatSession } from '@/types/chat';
 import { ChatApiService } from '@/lib/api';
 import ChatSessionItem from './ChatSessionItem';
+import NewChatModal from './NewChatModal';
 import { Plus, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ChatSidebarProps {
@@ -21,6 +22,7 @@ export default function ChatSidebar({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
 
   // Load sessions on component mount and when refresh is triggered
   useEffect(() => {
@@ -40,14 +42,13 @@ export default function ChatSidebar({
       setIsLoading(false);
     }
   };
-
-  const handleCreateSession = async () => {
+  const handleCreateSession = async (title: string) => {
     try {
       setIsCreating(true);
       setError(null);
       
       const newSession = await ChatApiService.createSession({
-        title: `New Chat ${sessions.length + 1}`
+        title
       });
       
       // Add new session to the beginning of the list
@@ -55,6 +56,9 @@ export default function ChatSidebar({
       
       // Select the new session
       onSessionSelect(newSession);
+      
+      // Close modal
+      setShowNewChatModal(false);
       
     } catch (error) {
       setError('Failed to create new chat session');
@@ -84,6 +88,23 @@ export default function ChatSidebar({
     }
   };
 
+  const handleRenameSession = async (sessionId: string, newTitle: string) => {
+    try {
+      setError(null);
+      const updatedSession = await ChatApiService.updateSession(sessionId, { title: newTitle });
+      
+      // Update session in list
+      setSessions(prev => 
+        prev.map(s => s.id === sessionId ? updatedSession : s)
+      );
+      
+    } catch (error) {
+      setError('Failed to rename chat session');
+      console.error('Error renaming session:', error);
+      throw error; // Re-throw to handle in component
+    }
+  };
+
   return (
     <div className="flex flex-col bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 border-r w-80 h-full">
       {/* Header */}
@@ -96,9 +117,8 @@ export default function ChatSidebar({
             </h1>
           </div>
         </div>
-        
-        <button
-          onClick={handleCreateSession}
+          <button
+          onClick={() => setShowNewChatModal(true)}
           disabled={isCreating}
           className="flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-4 py-2 rounded-lg w-full text-white transition-colors disabled:cursor-not-allowed"
         >
@@ -141,14 +161,14 @@ export default function ChatSidebar({
             </p>
           </div>
         ) : (
-          <div className="space-y-1 p-2">
-            {sessions.map((session) => (
+          <div className="space-y-1 p-2">            {sessions.map((session) => (
               <ChatSessionItem
                 key={session.id}
                 session={session}
                 isActive={session.id === selectedSessionId}
                 onSelect={() => onSessionSelect(session)}
                 onDelete={handleDeleteSession}
+                onRename={handleRenameSession}
               />
             ))}
           </div>
@@ -161,6 +181,14 @@ export default function ChatSidebar({
           Powered by Azure OpenAI & Semantic Kernel
         </p>
       </div>
+
+      {/* New Chat Modal */}
+      <NewChatModal
+        isOpen={showNewChatModal}
+        onClose={() => setShowNewChatModal(false)}
+        onConfirm={handleCreateSession}
+        isLoading={isCreating}
+      />
     </div>
   );
 }
