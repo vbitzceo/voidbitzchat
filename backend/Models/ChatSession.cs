@@ -16,10 +16,12 @@ public class ChatSession
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    
-    [StringLength(50)]
+      [StringLength(50)]
     public string? UserId { get; set; }
     
-    // Navigation property
+    public Guid? ModelDeploymentId { get; set; }
+    
+    // Navigation properties
     public virtual ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
+    public virtual ModelDeployment? ModelDeployment { get; set; }
 }

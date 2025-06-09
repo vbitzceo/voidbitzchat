@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
-using Azure.Identity;
 using Serilog;
 using VoidBitzChat.Api.Data;
 using VoidBitzChat.Api.Services;
@@ -46,44 +45,6 @@ builder.Services.AddDbContext<ChatDbContext>(options =>
             errorNumbersToAdd: null);
     }));
 
-// Configure Semantic Kernel with Azure OpenAI
-var azureOpenAIEndpoint = builder.Configuration["AzureOpenAI:Endpoint"];
-var azureOpenAIDeployment = builder.Configuration["AzureOpenAI:DeploymentName"] ?? "gpt-4o";
-var azureOpenAIKey = builder.Configuration["AzureOpenAI:ApiKey"];
-
-if (string.IsNullOrEmpty(azureOpenAIEndpoint))
-{
-    throw new InvalidOperationException("Azure OpenAI endpoint is not configured. Please set AzureOpenAI:Endpoint in configuration.");
-}
-
-if (string.IsNullOrEmpty(azureOpenAIDeployment))
-{
-    throw new InvalidOperationException("Azure OpenAI deployment name is not configured. Please set AzureOpenAI:DeploymentName in configuration.");
-}
-
-if (string.IsNullOrEmpty(azureOpenAIKey))
-{
-    throw new InvalidOperationException("Azure OpenAI API key is not configured. Please set AzureOpenAI:ApiKey in configuration.");
-}
-
-// Use Managed Identity for Azure OpenAI authentication (best practice for Azure deployments)
-var credential = new DefaultAzureCredential();
-
-builder.Services.AddSingleton<Kernel>(serviceProvider =>
-{
-    // Add Azure OpenAI chat completion service
-    var kernelBuilder = Kernel.CreateBuilder();    
-    kernelBuilder.AddAzureOpenAIChatCompletion(
-        deploymentName: azureOpenAIDeployment,
-        endpoint: azureOpenAIEndpoint,
-        apiKey: azureOpenAIKey); // Probably shoul be replaced by managed identity
-
-    var kernel = kernelBuilder.Build();
-    
-    Log.Information("Semantic Kernel configured with Azure OpenAI endpoint: {Endpoint}", azureOpenAIEndpoint);
-    return kernel;
-});
-
 // Register application services
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IChatService, ChatService>();
@@ -102,12 +63,7 @@ builder.Services.AddCors(options =>
 
 // Add health checks
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ChatDbContext>()
-    .AddCheck("semantic-kernel", () => 
-    {
-        // Simple health check for Semantic Kernel availability
-        return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("Semantic Kernel is configured");
-    });
+    .AddDbContextCheck<ChatDbContext>();
 
 var app = builder.Build();
 
@@ -122,13 +78,68 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Ensure database is created
+// Ensure database is created and seeded
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
     try
     {
         context.Database.EnsureCreated();
+        
+        // Seed default model deployments if none exist
+        if (!context.ModelDeployments.Any())
+        {
+            var azureOpenAIEndpoint = builder.Configuration["AzureOpenAI:Endpoint"];
+            var azureOpenAIKey = builder.Configuration["AzureOpenAI:ApiKey"];
+            
+            if (!string.IsNullOrEmpty(azureOpenAIEndpoint) && !string.IsNullOrEmpty(azureOpenAIKey))
+            {
+                var defaultDeployments = new[]
+                {                    new VoidBitzChat.Api.Models.ModelDeployment
+                    {
+                        Name = "gpt-4o",
+                        DeploymentName = "gpt-4o", // Hardcoded - no need for config fallback
+                        Endpoint = azureOpenAIEndpoint,
+                        ApiKey = azureOpenAIKey,
+                        ModelType = "gpt-4o",
+                        Description = "gpt-4o model for advanced responses",
+                        IsActive = true,
+                        IsDefault = true
+                    },
+                    new VoidBitzChat.Api.Models.ModelDeployment
+                    {
+                        Name = "gpt-35-turbo",
+                        DeploymentName = "gpt-35-turbo",
+                        Endpoint = azureOpenAIEndpoint,
+                        ApiKey = azureOpenAIKey,
+                        ModelType = "gpt-35-turbo",
+                        Description = "gpt-35-turbo model for cost-effective responses",
+                        IsActive = true,
+                        IsDefault = false
+                    },
+                    new VoidBitzChat.Api.Models.ModelDeployment
+                    {
+                        Name = "phi-3",
+                        DeploymentName = "phi-3",
+                        Endpoint = azureOpenAIEndpoint,
+                        ApiKey = azureOpenAIKey,
+                        ModelType = "phi-3",
+                        Description = "phi-3 model",
+                        IsActive = true,
+                        IsDefault = false
+                    }
+                };
+                
+                context.ModelDeployments.AddRange(defaultDeployments);
+                context.SaveChanges();
+                Log.Information("Seeded {Count} default model deployments", defaultDeployments.Length);
+            }
+            else
+            {
+                Log.Warning("Azure OpenAI configuration not found, skipping model deployment seeding");
+            }
+        }
+        
         Log.Information("Database initialized successfully");
     }
     catch (Exception ex)

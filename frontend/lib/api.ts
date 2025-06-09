@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ChatSession, ChatSessionDetail, ChatMessage, CreateSessionRequest, ChatMessageRequest, UpdateSessionRequest } from '@/types/chat';
+import { ChatSession, ChatSessionDetail, ChatMessage, CreateSessionRequest, ChatMessageRequest, UpdateSessionRequest, ModelDeployment } from '@/types/chat';
 
 // API base URL - should be configurable via environment variables
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5027/api';
@@ -103,7 +103,6 @@ export class ChatApiService {
       throw new Error('Failed to update chat session');
     }
   }
-
   /**
    * Check API health status
    */
@@ -114,6 +113,19 @@ export class ChatApiService {
     } catch (error) {
       console.error('Health check failed:', error);
       throw new Error('API is not responding');
+    }
+  }
+
+  /**
+   * Get available model deployments
+   */
+  static async getModelDeployments(): Promise<ModelDeployment[]> {
+    try {
+      const response = await apiClient.get<ModelDeployment[]>('/chat/model-deployments');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch model deployments:', error);
+      throw new Error('Failed to load model deployments');
     }
   }
 }

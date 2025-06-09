@@ -70,13 +70,18 @@ export default function ChatSessionItem({
       onClick={() => onSelect(session.id)}
     >
       <div className="flex justify-between items-start">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="flex-1 min-w-0">          <div className="flex items-center gap-2 mb-1">
             <MessageSquare className="flex-shrink-0 w-4 h-4 text-gray-500" />
             <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
               {session.title}
             </h3>
           </div>
+          
+          {session.modelDeploymentName && (
+            <p className="mb-1 text-gray-500 dark:text-gray-400 text-xs">
+              Model: {session.modelDeploymentName}
+            </p>
+          )}
           
           {truncatedLastMessage && (
             <p className="mb-2 text-gray-600 dark:text-gray-400 text-xs line-clamp-2">

@@ -16,6 +16,9 @@ public interface IChatRepository
     Task UpdateSessionTimestampAsync(Guid sessionId);
     Task<bool> DeleteSessionAsync(Guid sessionId, string? userId = null);
     Task<bool> UpdateSessionAsync(Guid sessionId, string title, string? userId = null);
+    Task<List<ModelDeployment>> GetActiveModelDeploymentsAsync();
+    Task<ModelDeployment?> GetModelDeploymentAsync(Guid deploymentId);
+    Task<ModelDeployment?> GetDefaultModelDeploymentAsync();
 }
 
 /// <summary>
@@ -30,14 +33,13 @@ public class ChatRepository : IChatRepository
     {
         _context = context;
         _logger = logger;
-    }
-
-    public async Task<ChatSession?> GetSessionWithMessagesAsync(Guid sessionId, string? userId = null)
+    }    public async Task<ChatSession?> GetSessionWithMessagesAsync(Guid sessionId, string? userId = null)
     {
         try
         {
             var query = _context.ChatSessions
                 .Include(s => s.Messages)
+                .Include(s => s.ModelDeployment)
                 .Where(s => s.Id == sessionId);
 
             // If userId is provided, filter by user
@@ -53,14 +55,13 @@ public class ChatRepository : IChatRepository
             _logger.LogError(ex, "Error retrieving session {SessionId} for user {UserId}", sessionId, userId);
             throw;
         }
-    }
-
-    public async Task<List<ChatSession>> GetUserSessionsAsync(string? userId = null)
+    }    public async Task<List<ChatSession>> GetUserSessionsAsync(string? userId = null)
     {
         try
         {
             var query = _context.ChatSessions
                 .Include(s => s.Messages)
+                .Include(s => s.ModelDeployment)
                 .AsQueryable();
 
             // If userId is provided, filter by user
@@ -185,13 +186,58 @@ public class ChatRepository : IChatRepository
             session.UpdatedAt = DateTime.UtcNow;
             
             await _context.SaveChangesAsync();
-            
-            _logger.LogInformation("Updated chat session {SessionId} title to '{Title}'", sessionId, title);
+              _logger.LogInformation("Updated chat session {SessionId} title to '{Title}'", sessionId, title);
             return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating session {SessionId}", sessionId);
+            throw;
+        }
+    }
+
+    public async Task<List<ModelDeployment>> GetActiveModelDeploymentsAsync()
+    {
+        try
+        {
+            return await _context.ModelDeployments
+                .Where(d => d.IsActive)
+                .OrderBy(d => d.Name)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving active model deployments");
+            throw;
+        }
+    }
+
+    public async Task<ModelDeployment?> GetModelDeploymentAsync(Guid deploymentId)
+    {
+        try
+        {
+            return await _context.ModelDeployments
+                .Where(d => d.Id == deploymentId && d.IsActive)
+                .FirstOrDefaultAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving model deployment {DeploymentId}", deploymentId);
+            throw;
+        }
+    }
+
+    public async Task<ModelDeployment?> GetDefaultModelDeploymentAsync()
+    {
+        try
+        {
+            return await _context.ModelDeployments
+                .Where(d => d.IsDefault && d.IsActive)
+                .FirstOrDefaultAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving default model deployment");
             throw;
         }
     }

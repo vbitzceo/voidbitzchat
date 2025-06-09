@@ -16,6 +16,8 @@ export interface ChatSession {
   updatedAt: string;
   messageCount: number;
   lastMessage?: string;
+  modelDeploymentId?: string;
+  modelDeploymentName?: string;
 }
 
 export interface ChatSessionDetail extends ChatSession {
@@ -24,6 +26,7 @@ export interface ChatSessionDetail extends ChatSession {
 
 export interface CreateSessionRequest {
   title: string;
+  modelDeploymentId?: string;
 }
 
 export interface UpdateSessionRequest {
@@ -33,6 +36,15 @@ export interface UpdateSessionRequest {
 export interface ChatMessageRequest {
   sessionId: string;
   message: string;
+}
+
+export interface ModelDeployment {
+  id: string;
+  name: string;
+  modelType: string;
+  description?: string;
+  isActive: boolean;
+  isDefault: boolean;
 }
 
 export interface ApiResponse<T> {

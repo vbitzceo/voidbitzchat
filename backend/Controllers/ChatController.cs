@@ -67,8 +67,7 @@ public class ChatController : ControllerBase
     /// <summary>
     /// Create a new chat session
     /// </summary>
-    [HttpPost("sessions")]
-    public async Task<ActionResult<ChatSessionResponse>> CreateSession([FromBody] CreateSessionRequest request)
+    [HttpPost("sessions")]    public async Task<ActionResult<ChatSessionResponse>> CreateSession([FromBody] CreateSessionRequest request)
     {
         try
         {
@@ -78,7 +77,7 @@ public class ChatController : ControllerBase
             }
 
             var userId = GetCurrentUserId();
-            var session = await _chatService.CreateSessionAsync(request.Title, userId);
+            var session = await _chatService.CreateSessionAsync(request.Title, request.ModelDeploymentId, userId);
             
             return CreatedAtAction(
                 nameof(GetSession),
@@ -182,7 +181,24 @@ public class ChatController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating chat session {SessionId}", sessionId);
-            return StatusCode(500, "An error occurred while updating the chat session");
+            return StatusCode(500, "An error occurred while updating the chat session");        }
+    }
+
+    /// <summary>
+    /// Get available model deployments
+    /// </summary>
+    [HttpGet("model-deployments")]
+    public async Task<ActionResult<List<ModelDeploymentResponse>>> GetModelDeployments()
+    {
+        try
+        {
+            var deployments = await _chatService.GetActiveModelDeploymentsAsync();
+            return Ok(deployments);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving model deployments");
+            return StatusCode(500, "An error occurred while retrieving model deployments");
         }
     }
 
