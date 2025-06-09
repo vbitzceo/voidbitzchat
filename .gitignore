@@ -401,4 +401,6 @@ server/dist
 public/dist
 storybook-static/
 junit.xml
+package-lock.json
+
 
