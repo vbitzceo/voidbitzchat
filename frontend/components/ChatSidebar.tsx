@@ -11,12 +11,14 @@ interface ChatSidebarProps {
   selectedSessionId: string | null;
   onSessionSelect: (session: ChatSession | null) => void;
   onRefreshSessions: number; // Used as a trigger to refresh
+  onSessionUpdate?: (updatedSession: ChatSession) => void; // Called when a session is updated
 }
 
 export default function ChatSidebar({ 
   selectedSessionId, 
   onSessionSelect, 
-  onRefreshSessions 
+  onRefreshSessions,
+  onSessionUpdate 
 }: ChatSidebarProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +89,6 @@ export default function ChatSidebar({
       console.error('Error deleting session:', error);
     }
   };
-
   const handleRenameSession = async (sessionId: string, newTitle: string) => {
     try {
       setError(null);
@@ -97,6 +98,9 @@ export default function ChatSidebar({
       setSessions(prev => 
         prev.map(s => s.id === sessionId ? updatedSession : s)
       );
+      
+      // Notify parent about the session update
+      onSessionUpdate?.(updatedSession);
       
     } catch (error) {
       setError('Failed to rename chat session');
