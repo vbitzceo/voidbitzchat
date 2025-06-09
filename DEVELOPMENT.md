@@ -1,5 +1,47 @@
 # VoidBitz Chat - Development Setup
 
+## ⚠️ Critical Security Issues
+
+### No User Authentication/Isolation
+
+**STATUS**: 🔴 **CRITICAL VULNERABILITY**
+
+The application currently has a major security flaw where all users share the same data:
+
+#### Problem Details
+- No user authentication system implemented
+- `GetUserId()` method returns `null` for all requests
+- All chat sessions are visible to all users
+- Any user can modify or delete any chat session
+
+#### Impact
+- **Data Privacy**: Users can see private conversations from other users
+- **Data Integrity**: Users can accidentally or maliciously modify others' data
+- **Compliance**: Violates basic data protection principles
+
+#### Code Location
+```csharp
+// File: backend/Controllers/ChatController.cs
+private string? GetUserId()
+{
+    // TODO: Implement proper user identification
+    return null; // ⚠️ Security vulnerability
+}
+```
+
+#### Required Actions
+1. **Immediate**: Add clear warnings in documentation ✅
+2. **Before Production**: Implement user isolation (see solutions below)
+3. **Testing**: Use separate browser profiles to simulate different users
+
+#### Implementation Solutions
+
+| Solution | Complexity | Use Case | Security Level |
+|----------|------------|----------|----------------|
+| Session-based | Low | Development/Testing | Basic |
+| Cookie-based | Medium | MVP/Demo | Good |
+| JWT Auth | High | Production | Excellent |
+
 ## Project Structure
 
 The project has a simplified, flat structure for easy navigation:
@@ -131,12 +173,29 @@ For production, use Azure Managed Identity instead of API keys.
 
 ## Application Features
 
+### ✅ Chat Naming System
+- **Status**: Complete and tested
+- **Security**: ⚠️ **Affected by user isolation issue**
+- **Features**:
+  - Custom titles for new chats
+  - Rename existing chats
+  - Title validation and persistence
+
+### ❌ User Authentication
+- **Status**: Not implemented
+- **Priority**: **CRITICAL** for production
+- **Requirements**:
+  - User identification system
+  - Session management
+  - Data isolation
+
 ### Chat Session Management
 The application supports comprehensive chat session management:
 
 - **Custom Chat Titles**: Users can create chats with meaningful, descriptive names
 - **Rename Functionality**: Existing chats can be renamed using the edit icon in the sidebar
 - **Session Persistence**: All chat titles and conversation history are stored in the database
+- **⚠️ User Context Isolation**: **CURRENTLY BROKEN** - All users see all sessions
 - **User Context Isolation**: Each session maintains its own conversation context
 
 ### User Interface
@@ -150,6 +209,32 @@ The application supports comprehensive chat session management:
 - `PUT /api/chat/sessions/{id}` - Update session title
 - `GET /api/chat/sessions` - List user sessions with titles
 - `DELETE /api/chat/sessions/{id}` - Remove sessions
+
+## Testing Considerations
+
+### Current Testing Limitations
+- All HTTP tests share the same user context
+- Cannot test multi-user scenarios
+- Data persistence affects all users
+
+### Recommended Testing Approach
+1. **Development**: Use browser incognito/private windows
+2. **API Testing**: Test with different session cookies
+3. **Production**: Implement proper user isolation first
+
+## Development Workflow
+
+### Before Starting Development
+1. ⚠️ **Understand the security limitations**
+2. Use separate browser profiles for multi-user testing
+3. Clear database regularly during development
+
+### Before Production Deployment
+1. **MUST**: Implement user authentication
+2. **MUST**: Add proper error handling
+3. **MUST**: Add input validation
+4. **MUST**: Add rate limiting
+5. **MUST**: Add HTTPS enforcement
 
 ## Troubleshooting
 

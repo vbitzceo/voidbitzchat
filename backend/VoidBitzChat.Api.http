@@ -1,3 +1,25 @@
+###
+# VoidBitz Chat API Testing
+# 
+# ⚠️ SECURITY WARNING:
+# This API currently has NO USER AUTHENTICATION.
+# All requests will return data for ALL users.
+# All operations affect a shared global dataset.
+#
+# DO NOT use with sensitive data.
+# DO NOT deploy to production without implementing user authentication.
+###
+
+// VoidBitz Chat API Testing
+// 
+// ⚠️ SECURITY WARNING:
+// This API currently has NO USER AUTHENTICATION.
+// All requests will return data for ALL users.
+// All operations affect a shared global dataset.
+//
+// DO NOT use with sensitive data.
+// DO NOT deploy to production without implementing user authentication.
+
 @VoidBitzChat.Api_HostAddress = http://localhost:5027
 @sessionId = 00000000-0000-0000-0000-000000000000
 
@@ -5,16 +27,18 @@
 GET {{VoidBitzChat.Api_HostAddress}}/api/status
 Accept: application/json
 
-### Get all chat sessions
+### Get All Chat Sessions
+# ⚠️ WARNING: Returns ALL sessions from ALL users
 GET {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions
 Accept: application/json
 
-### Create a new chat session with custom title
+### Create New Chat Session  
+# ⚠️ WARNING: Session will be visible to ALL users
 POST {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions
 Content-Type: application/json
 
 {
-  "title": "Planning Weekend Trip"
+  "title": "⚠️ TEST SESSION - Visible to All Users"
 }
 
 ### Get specific chat session with messages
@@ -40,5 +64,18 @@ Content-Type: application/json
 
 ### Delete chat session
 DELETE {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}
+
+### SECURITY TEST: Try to access session created by "another user"
+# This should fail in a properly secured system, but currently succeeds
+GET {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}
+
+### SECURITY TEST: Try to modify session from "another user" 
+# This should fail in a properly secured system, but currently succeeds
+PUT {{VoidBitzChat.Api_HostAddress}}/api/chat/sessions/{{sessionId}}
+Content-Type: application/json
+
+{
+  "title": "⚠️ Modified by Different User - This Should Not Work!"
+}
 
 ###
