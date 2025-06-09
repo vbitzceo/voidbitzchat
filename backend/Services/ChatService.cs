@@ -1,6 +1,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Azure.AI.OpenAI;
 using VoidBitzChat.Api.Models;
 using VoidBitzChat.Api.Models.DTOs;
 
@@ -14,40 +15,45 @@ public interface IChatService
     Task<ChatMessageResponse> SendMessageAsync(Guid sessionId, string userMessage, string? userId = null);
     Task<List<ChatSessionResponse>> GetUserSessionsAsync(string? userId = null);
     Task<ChatSessionDetailResponse?> GetSessionAsync(Guid sessionId, string? userId = null);
-    Task<ChatSessionResponse> CreateSessionAsync(string title, string? userId = null);
+    Task<ChatSessionResponse> CreateSessionAsync(string title, Guid? modelDeploymentId, string? userId = null);
     Task<bool> DeleteSessionAsync(Guid sessionId, string? userId = null);
     Task<ChatSessionResponse?> UpdateSessionAsync(Guid sessionId, string title, string? userId = null);
+    Task<List<ModelDeploymentResponse>> GetActiveModelDeploymentsAsync();
 }
 
 public class ChatService : IChatService
 {
     private readonly IChatRepository _chatRepository;
-    private readonly Kernel _kernel;
     private readonly ILogger<ChatService> _logger;
-    private readonly IChatCompletionService _chatCompletion;
 
     public ChatService(
         IChatRepository chatRepository,
-        Kernel kernel,
         ILogger<ChatService> logger)
     {
         _chatRepository = chatRepository;
-        _kernel = kernel;
         _logger = logger;
-        _chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
-    }
-
-    public async Task<ChatMessageResponse> SendMessageAsync(Guid sessionId, string userMessage, string? userId = null)
+    }    public async Task<ChatMessageResponse> SendMessageAsync(Guid sessionId, string userMessage, string? userId = null)
     {
         try
         {
             _logger.LogInformation("Processing chat message for session {SessionId}", sessionId);
 
-            // Get session with message history
+            // Get session with message history and model deployment
             var session = await _chatRepository.GetSessionWithMessagesAsync(sessionId, userId);
             if (session == null)
             {
                 throw new ArgumentException($"Session {sessionId} not found or access denied");
+            }
+
+            // Get model deployment or use default
+            var modelDeployment = session.ModelDeployment;
+            if (modelDeployment == null)
+            {
+                modelDeployment = await _chatRepository.GetDefaultModelDeploymentAsync();
+                if (modelDeployment == null)
+                {
+                    throw new InvalidOperationException("No model deployment available for this session");
+                }
             }
 
             // Save user message
@@ -61,6 +67,16 @@ public class ChatService : IChatService
             };
 
             await _chatRepository.AddMessageAsync(userChatMessage);
+
+            // Create a kernel with the specific model deployment
+            var kernelBuilder = Kernel.CreateBuilder();
+            kernelBuilder.AddAzureOpenAIChatCompletion(
+                deploymentName: modelDeployment.DeploymentName,
+                endpoint: modelDeployment.Endpoint,
+                apiKey: modelDeployment.ApiKey);
+
+            var kernel = kernelBuilder.Build();
+            var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
             // Build chat history for context
             var chatHistory = new ChatHistory();
@@ -85,8 +101,8 @@ public class ChatService : IChatService
             // Add the new user message
             chatHistory.AddUserMessage(userMessage);
 
-            // Get AI response using Semantic Kernel
-            var response = await _chatCompletion.GetChatMessageContentAsync(
+            // Get AI response using the specific model deployment
+            var response = await chatCompletion.GetChatMessageContentAsync(
                 chatHistory,
                 executionSettings: new OpenAIPromptExecutionSettings
                 {
@@ -112,7 +128,8 @@ public class ChatService : IChatService
             // Update session timestamp
             await _chatRepository.UpdateSessionTimestampAsync(sessionId);
 
-            _logger.LogInformation("Successfully processed chat message for session {SessionId}", sessionId);
+            _logger.LogInformation("Successfully processed chat message for session {SessionId} using model {ModelName}", 
+                sessionId, modelDeployment.Name);
 
             return new ChatMessageResponse
             {
@@ -129,9 +146,7 @@ public class ChatService : IChatService
             _logger.LogError(ex, "Error processing chat message for session {SessionId}", sessionId);
             throw;
         }
-    }
-
-    public async Task<List<ChatSessionResponse>> GetUserSessionsAsync(string? userId = null)
+    }    public async Task<List<ChatSessionResponse>> GetUserSessionsAsync(string? userId = null)
     {
         var sessions = await _chatRepository.GetUserSessionsAsync(userId);
         
@@ -144,16 +159,16 @@ public class ChatService : IChatService
             MessageCount = s.Messages.Count,
             LastMessage = s.Messages
                 .OrderByDescending(m => m.Timestamp)
-                .FirstOrDefault()?.Content
+                .FirstOrDefault()?.Content,
+            ModelDeploymentId = s.ModelDeploymentId,
+            ModelDeploymentName = s.ModelDeployment?.Name
         }).ToList();
     }
 
     public async Task<ChatSessionDetailResponse?> GetSessionAsync(Guid sessionId, string? userId = null)
     {
         var session = await _chatRepository.GetSessionWithMessagesAsync(sessionId, userId);
-        if (session == null) return null;
-
-        return new ChatSessionDetailResponse
+        if (session == null) return null;        return new ChatSessionDetailResponse
         {
             Id = session.Id,
             Title = session.Title,
@@ -163,6 +178,8 @@ public class ChatService : IChatService
             LastMessage = session.Messages
                 .OrderByDescending(m => m.Timestamp)
                 .FirstOrDefault()?.Content,
+            ModelDeploymentId = session.ModelDeploymentId,
+            ModelDeploymentName = session.ModelDeployment?.Name,
             Messages = session.Messages
                 .OrderBy(m => m.Timestamp)
                 .Select(m => new ChatMessageResponse
@@ -175,17 +192,28 @@ public class ChatService : IChatService
                     TokenCount = m.TokenCount
                 }).ToList()
         };
-    }
-
-    public async Task<ChatSessionResponse> CreateSessionAsync(string title, string? userId = null)
+    }    public async Task<ChatSessionResponse> CreateSessionAsync(string title, Guid? modelDeploymentId, string? userId = null)
     {
+        // If no model deployment specified, use the default
+        if (modelDeploymentId == null)
+        {
+            var defaultDeployment = await _chatRepository.GetDefaultModelDeploymentAsync();
+            modelDeploymentId = defaultDeployment?.Id;
+        }
+        
         var session = new ChatSession
         {
             Title = string.IsNullOrWhiteSpace(title) ? "New Chat" : title,
-            UserId = userId
+            UserId = userId,
+            ModelDeploymentId = modelDeploymentId
         };
 
         await _chatRepository.CreateSessionAsync(session);
+
+        // Load the model deployment for response
+        var modelDeployment = modelDeploymentId.HasValue 
+            ? await _chatRepository.GetModelDeploymentAsync(modelDeploymentId.Value) 
+            : null;
 
         return new ChatSessionResponse
         {
@@ -193,7 +221,9 @@ public class ChatService : IChatService
             Title = session.Title,
             CreatedAt = session.CreatedAt,
             UpdatedAt = session.UpdatedAt,
-            MessageCount = 0
+            MessageCount = 0,
+            ModelDeploymentId = session.ModelDeploymentId,
+            ModelDeploymentName = modelDeployment?.Name
         };
     }
 
@@ -215,9 +245,7 @@ public class ChatService : IChatService
         if (session == null)
         {
             return null;
-        }
-
-        return new ChatSessionResponse
+        }        return new ChatSessionResponse
         {
             Id = session.Id,
             Title = session.Title,
@@ -226,8 +254,25 @@ public class ChatService : IChatService
             MessageCount = session.Messages.Count,
             LastMessage = session.Messages
                 .OrderByDescending(m => m.Timestamp)
-                .FirstOrDefault()?.Content
+                .FirstOrDefault()?.Content,
+            ModelDeploymentId = session.ModelDeploymentId,
+            ModelDeploymentName = session.ModelDeployment?.Name
         };
+    }
+
+    public async Task<List<ModelDeploymentResponse>> GetActiveModelDeploymentsAsync()
+    {
+        var deployments = await _chatRepository.GetActiveModelDeploymentsAsync();
+        
+        return deployments.Select(d => new ModelDeploymentResponse
+        {
+            Id = d.Id,
+            Name = d.Name,
+            ModelType = d.ModelType,
+            Description = d.Description,
+            IsActive = d.IsActive,
+            IsDefault = d.IsDefault
+        }).ToList();
     }
 
     private static int EstimateTokenCount(string text)

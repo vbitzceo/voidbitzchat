@@ -28,6 +28,7 @@ public class ChatMessageResponse
 public class CreateSessionRequest
 {
     public string Title { get; set; } = string.Empty;
+    public Guid? ModelDeploymentId { get; set; }
 }
 
 /// <summary>
@@ -49,6 +50,8 @@ public class ChatSessionResponse
     public DateTime UpdatedAt { get; set; }
     public int MessageCount { get; set; }
     public string? LastMessage { get; set; }
+    public Guid? ModelDeploymentId { get; set; }
+    public string? ModelDeploymentName { get; set; }
 }
 
 /// <summary>
@@ -57,4 +60,17 @@ public class ChatSessionResponse
 public class ChatSessionDetailResponse : ChatSessionResponse
 {
     public List<ChatMessageResponse> Messages { get; set; } = new();
+}
+
+/// <summary>
+/// Response DTO for model deployments
+/// </summary>
+public class ModelDeploymentResponse
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string ModelType { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsDefault { get; set; }
 }

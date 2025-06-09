@@ -130,19 +130,30 @@ export default function ChatInterface({ selectedSession, onSessionUpdate }: Chat
   return (
     <div className="flex flex-col flex-1 h-full">      {/* Chat Header */}
       <div className="bg-white dark:bg-gray-800 p-4 border-gray-200 dark:border-gray-700 border-b">
-        <h1 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
-          {selectedSession.title}
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          {isWaitingForResponse ? (
-            <span className="flex items-center gap-1">
-              <span className="bg-blue-500 rounded-full w-2 h-2 animate-pulse"></span>
-              AI is responding...
-            </span>
-          ) : (
-            `${sessionDetail?.messageCount || 0} messages`
-          )}
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
+              {selectedSession.title}
+            </h1>
+            {selectedSession.modelDeploymentName && (
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Model: {selectedSession.modelDeploymentName}
+              </p>
+            )}
+          </div>
+          <div className="text-right">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              {isWaitingForResponse ? (
+                <span className="flex items-center gap-1">
+                  <span className="bg-blue-500 rounded-full w-2 h-2 animate-pulse"></span>
+                  AI is responding...
+                </span>
+              ) : (
+                `${sessionDetail?.messageCount || 0} messages`
+              )}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Error Display */}

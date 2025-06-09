@@ -43,14 +43,14 @@ export default function ChatSidebar({
     } finally {
       setIsLoading(false);
     }
-  };
-  const handleCreateSession = async (title: string) => {
+  };  const handleCreateSession = async (title: string, modelDeploymentId?: string) => {
     try {
       setIsCreating(true);
       setError(null);
       
       const newSession = await ChatApiService.createSession({
-        title
+        title,
+        modelDeploymentId
       });
       
       // Add new session to the beginning of the list
