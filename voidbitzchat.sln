@@ -4,7 +4,7 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoidBitzChat.Api", "backend\VoidBitzChat.Api\VoidBitzChat.Api.csproj", "{76FD8628-E464-0224-D18D-7E8A62AAB65D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoidBitzChat.Api", "backend\VoidBitzChat.Api.csproj", "{76FD8628-E464-0224-D18D-7E8A62AAB65D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

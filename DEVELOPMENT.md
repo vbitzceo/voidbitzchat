@@ -17,7 +17,7 @@ cd voidbitzchat
 
 ### 2. Backend Setup
 ```bash
-cd backend/VoidBitzChat.Api
+cd backend
 
 # Restore packages
 dotnet restore
@@ -68,14 +68,14 @@ The application uses SQL Server LocalDB by default. The connection string in `ap
 
 ### Creating Migrations
 ```bash
-cd backend/VoidBitzChat.Api
+cd backend
 dotnet ef migrations add <MigrationName>
 dotnet ef database update
 ```
 
 ### Reset Database
 ```bash
-cd backend/VoidBitzChat.Api
+cd backend
 dotnet ef database drop
 dotnet ef database update
 ```
@@ -83,7 +83,7 @@ dotnet ef database update
 ## Configuration
 
 ### Backend Configuration
-Edit `backend/VoidBitzChat.Api/appsettings.Development.json`:
+Edit `backend/appsettings.Development.json`:
 
 ```json
 {
@@ -117,7 +117,7 @@ For production, use Azure Managed Identity instead of API keys.
 
 1. **Port conflicts**: If ports 3000, 5267, or 7267 are in use, modify:
    - Frontend: `frontend/package.json` scripts
-   - Backend: `backend/VoidBitzChat.Api/Properties/launchSettings.json`
+   - Backend: `backend/Properties/launchSettings.json`
 
 2. **Database connection issues**:
    - Ensure SQL Server LocalDB is installed
@@ -139,7 +139,7 @@ For production, use Azure Managed Identity instead of API keys.
 
 ### Backend
 ```bash
-cd backend/VoidBitzChat.Api
+cd backend
 dotnet test
 ```
 
@@ -160,7 +160,7 @@ npm start
 
 ### Backend
 ```bash
-cd backend/VoidBitzChat.Api
+cd backend
 dotnet publish -c Release
 ```
 

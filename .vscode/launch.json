@@ -5,9 +5,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "Backend: Build",
-            "program": "${workspaceFolder}/backend/VoidBitzChat.Api/bin/Debug/net8.0/VoidBitzChat.Api.dll",
+            "program": "${workspaceFolder}/backend/bin/Debug/net8.0/VoidBitzChat.Api.dll",
             "args": ["--urls", "http://localhost:5027"],
-            "cwd": "${workspaceFolder}/backend/VoidBitzChat.Api",
+            "cwd": "${workspaceFolder}/backend",
             "stopAtEntry": false,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",

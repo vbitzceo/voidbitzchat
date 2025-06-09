@@ -4,7 +4,7 @@ metadata:
   template: voidbitzchat@0.0.1-beta
 services:
   api:
-    project: ./backend/VoidBitzChat.Api
+    project: ./backend
     language: csharp
     host: containerapp
   frontend:

@@ -1,13 +1,12 @@
 {
     "version": "2.0.0",
-    "tasks": [
-        {
+    "tasks": [        {
             "label": "Backend: Build",
             "type": "shell",
             "command": "dotnet",
             "args": ["build"],
             "options": {
-                "cwd": "${workspaceFolder}/backend/VoidBitzChat.Api"
+                "cwd": "${workspaceFolder}/backend"
             },
             "group": "build",
             "presentation": {
@@ -16,14 +15,13 @@
                 "panel": "shared"
             },
             "problemMatcher": "$msCompile"
-        },
-        {
+        },        {
             "label": "Backend: Run",
             "type": "shell",
             "command": "dotnet",
             "args": ["run"],
             "options": {
-                "cwd": "${workspaceFolder}/backend/VoidBitzChat.Api"
+                "cwd": "${workspaceFolder}/backend"
             },
             "group": "build",
             "presentation": {
@@ -105,14 +103,13 @@
                     "endsPattern": "^.*ready on.*"
                 }
             }
-        },
-        {
+        },        {
             "label": "Database: Create Migration",
             "type": "shell",
             "command": "dotnet",
             "args": ["ef", "migrations", "add", "${input:migrationName}"],
             "options": {
-                "cwd": "${workspaceFolder}/backend/VoidBitzChat.Api"
+                "cwd": "${workspaceFolder}/backend"
             },
             "group": "build",
             "presentation": {
@@ -120,14 +117,13 @@
                 "reveal": "always",
                 "panel": "shared"
             }
-        },
-        {
+        },        {
             "label": "Database: Update Database",
             "type": "shell",
             "command": "dotnet",
             "args": ["ef", "database", "update"],
             "options": {
-                "cwd": "${workspaceFolder}/backend/VoidBitzChat.Api"
+                "cwd": "${workspaceFolder}/backend"
             },
             "group": "build",
             "presentation": {
