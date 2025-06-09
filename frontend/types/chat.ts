@@ -26,6 +26,10 @@ export interface CreateSessionRequest {
   title: string;
 }
 
+export interface UpdateSessionRequest {
+  title: string;
+}
+
 export interface ChatMessageRequest {
   sessionId: string;
   message: string;

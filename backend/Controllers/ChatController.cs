@@ -155,6 +155,38 @@ public class ChatController : ControllerBase
     }
 
     /// <summary>
+    /// Update a chat session title
+    /// </summary>
+    [HttpPut("sessions/{sessionId:guid}")]
+    public async Task<ActionResult<ChatSessionResponse>> UpdateSession(
+        Guid sessionId, 
+        [FromBody] UpdateSessionRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Title))
+            {
+                return BadRequest("Session title is required");
+            }
+
+            var userId = GetCurrentUserId();
+            var updatedSession = await _chatService.UpdateSessionAsync(sessionId, request.Title, userId);
+            
+            if (updatedSession == null)
+            {
+                return NotFound($"Session {sessionId} not found");
+            }
+
+            return Ok(updatedSession);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating chat session {SessionId}", sessionId);
+            return StatusCode(500, "An error occurred while updating the chat session");
+        }
+    }
+
+    /// <summary>
     /// Get current user ID (placeholder for authentication)
     /// In a real application, this would extract the user ID from JWT token or other auth mechanism
     /// </summary>

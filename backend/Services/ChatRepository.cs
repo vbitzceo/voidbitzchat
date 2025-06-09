@@ -15,6 +15,7 @@ public interface IChatRepository
     Task<ChatMessage> AddMessageAsync(ChatMessage message);
     Task UpdateSessionTimestampAsync(Guid sessionId);
     Task<bool> DeleteSessionAsync(Guid sessionId, string? userId = null);
+    Task<bool> UpdateSessionAsync(Guid sessionId, string title, string? userId = null);
 }
 
 /// <summary>
@@ -158,6 +159,39 @@ public class ChatRepository : IChatRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting session {SessionId}", sessionId);
+            throw;
+        }
+    }
+
+    public async Task<bool> UpdateSessionAsync(Guid sessionId, string title, string? userId = null)
+    {
+        try
+        {
+            var query = _context.ChatSessions.Where(s => s.Id == sessionId);
+
+            // If userId is provided, ensure user owns the session
+            if (!string.IsNullOrEmpty(userId))
+            {
+                query = query.Where(s => s.UserId == userId);
+            }
+
+            var session = await query.FirstOrDefaultAsync();
+            if (session == null)
+            {
+                return false;
+            }
+
+            session.Title = string.IsNullOrWhiteSpace(title) ? "Untitled Chat" : title;
+            session.UpdatedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Updated chat session {SessionId} title to '{Title}'", sessionId, title);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating session {SessionId}", sessionId);
             throw;
         }
     }

@@ -32,8 +32,9 @@ voidbitzchat/
 ## Features
 
 - Real-time chat interface similar to ChatGPT
-- Chat session management (create, view, switch between sessions)
-- Complete chat history persistence
+- **Custom Chat Naming**: Create chats with meaningful, custom titles
+- **Chat Management**: Rename existing chats, create, view, switch between sessions
+- Complete chat history persistence with user-defined organization
 - Context isolation between sessions
 - Semantic Kernel integration for advanced AI capabilities
 - Comprehensive logging and monitoring
@@ -88,5 +89,22 @@ voidbitzchat/
 ### VS Code Development
 
 Use the **"Start Full Stack"** task from VS Code's Command Palette (`Ctrl+Shift+P` → `Tasks: Run Task`) to run both frontend and backend simultaneously.
+
+## Using the Chat Application
+
+### Creating Named Chats
+1. Click the **"New Chat"** button in the sidebar
+2. Enter a meaningful title for your conversation (e.g., "Planning Weekend Trip", "Code Review Discussion")
+3. Click **"Create Chat"** to start your conversation
+
+### Renaming Existing Chats
+1. Hover over any chat session in the sidebar
+2. Click the **pencil icon** that appears
+3. Enter a new title and click **"Save"**
+
+### Chat Organization
+- All chats are automatically saved with your custom titles
+- Chat sessions are ordered by most recent activity
+- Each chat maintains its own conversation context and history
 
 For detailed setup instructions, see [DEVELOPMENT.md](DEVELOPMENT.md).

@@ -1,23 +1,28 @@
 'use client';
 
 import { ChatSession } from '@/types/chat';
-import { MessageSquare, Calendar, Trash2 } from 'lucide-react';
+import { MessageSquare, Calendar, Trash2, Edit2 } from 'lucide-react';
 import { useState } from 'react';
+import RenameChatModal from './RenameChatModal';
 
 interface ChatSessionItemProps {
   session: ChatSession;
   isActive: boolean;
   onSelect: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
+  onRename: (sessionId: string, newTitle: string) => void;
 }
 
 export default function ChatSessionItem({ 
   session, 
   isActive, 
   onSelect, 
-  onDelete 
+  onDelete,
+  onRename 
 }: ChatSessionItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,6 +37,23 @@ export default function ChatSessionItem({
   const handleCancelDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirm(false);
+  };
+
+  const handleRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowRenameModal(true);
+  };
+
+  const handleRenameConfirm = async (newTitle: string) => {
+    try {
+      setIsRenaming(true);
+      await onRename(session.id, newTitle);
+      setShowRenameModal(false);
+    } catch (error) {
+      console.error('Error renaming session:', error);
+    } finally {
+      setIsRenaming(false);
+    }
   };
 
   const createdDate = new Date(session.createdAt).toLocaleDateString();
@@ -89,18 +111,33 @@ export default function ChatSessionItem({
               >
                 Cancel
               </button>
+            </>          ) : (
+            <>
+              <button
+                onClick={handleRename}
+                className="hover:bg-blue-50 p-1 rounded text-gray-400 hover:text-blue-600"
+                title="Rename chat"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="hover:bg-red-50 p-1 rounded text-gray-400 hover:text-red-600"
+                title="Delete session"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </>
-          ) : (
-            <button
-              onClick={handleDelete}
-              className="hover:bg-red-50 p-1 rounded text-gray-400 hover:text-red-600"
-              title="Delete session"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
           )}
         </div>
-      </div>
+      </div>      {/* Rename modal */}
+      <RenameChatModal
+        isOpen={showRenameModal}
+        onClose={() => setShowRenameModal(false)}
+        onConfirm={handleRenameConfirm}
+        currentTitle={session.title}
+        isLoading={isRenaming}
+      />
     </div>
   );
 }
