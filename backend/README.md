@@ -2,6 +2,17 @@
 
 ASP.NET Core Web API backend for the VoidBitz Chat application.
 
+## ⚠️ **CRITICAL SECURITY WARNING**
+
+**This API currently has NO USER AUTHENTICATION implemented.**
+
+- All endpoints return data for ALL users
+- Any client can access any chat session
+- The `GetUserId()` method in `ChatController` returns `null`
+- This creates a **MAJOR SECURITY VULNERABILITY**
+
+**DO NOT deploy to production without implementing proper user authentication.**
+
 ## Features
 
 - **Chat Management**: Create, retrieve, update, and delete chat sessions with custom titles
@@ -15,14 +26,20 @@ ASP.NET Core Web API backend for the VoidBitz Chat application.
 ## API Endpoints
 
 ### Chat Sessions
-- `GET /api/chat/sessions` - Get all user sessions
-- `POST /api/chat/sessions` - Create a new session with custom title
-- `GET /api/chat/sessions/{id}` - Get session with messages
-- `PUT /api/chat/sessions/{id}` - Update session title
-- `DELETE /api/chat/sessions/{id}` - Delete a session
 
-### Messages
-- `POST /api/chat/sessions/{id}/messages` - Send message and get AI response
+| Method | Endpoint | Description | ⚠️ Security Issue |
+|--------|----------|-------------|-------------------|
+| GET | `/api/chat/sessions` | Get all chat sessions | **Returns ALL users' sessions** |
+| POST | `/api/chat/sessions` | Create new session | **No user ownership** |
+| GET | `/api/chat/sessions/{id}` | Get specific session | **Any user can access any session** |
+| PUT | `/api/chat/sessions/{id}` | Update session title | **Any user can modify any session** |
+| DELETE | `/api/chat/sessions/{id}` | Delete session | **Any user can delete any session** |
+
+### Chat Messages
+
+| Method | Endpoint | Description | ⚠️ Security Issue |
+|--------|----------|-------------|-------------------|
+| POST | `/api/chat/sessions/{id}/messages` | Send message | **No user validation** |
 
 ## Quick Start
 
@@ -103,3 +120,55 @@ Use the included `VoidBitzChat.Api.http` file with VS Code REST Client extension
      "message": "Hello! How are you today?"
    }
    ```
+
+## Security Implementation Required
+
+### Current Issue
+
+The `GetUserId()` method in `ChatController.cs` currently returns `null`:
+
+```csharp
+private string? GetUserId()
+{
+    // TODO: Implement proper user identification
+    return null; // ⚠️ THIS IS THE PROBLEM
+}
+```
+
+### Quick Fix Options
+
+1. **Session-based (Development)**:
+```csharp
+private string GetUserId() => HttpContext.Session.Id;
+```
+
+2. **Cookie-based (Recommended)**:
+```csharp
+private string GetUserId()
+{
+    const string USER_ID_COOKIE = "voidbitz_user_id";
+    if (Request.Cookies.TryGetValue(USER_ID_COOKIE, out var userId))
+        return userId;
+    
+    var newUserId = Guid.NewGuid().ToString();
+    Response.Cookies.Append(USER_ID_COOKIE, newUserId, new CookieOptions
+    {
+        Expires = DateTimeOffset.UtcNow.AddYears(1),
+        HttpOnly = true,
+        Secure = true
+    });
+    return newUserId;
+}
+```
+
+3. **JWT Authentication (Production)**:
+```csharp
+private string? GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+```
+
+## Database Schema
+
+The database is already prepared for user isolation:
+- `ChatSessions` table has `UserId` column
+- All repository methods support user filtering
+- Only the controller's `GetUserId()` method needs implementation
