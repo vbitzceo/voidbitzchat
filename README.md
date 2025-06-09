@@ -10,6 +10,25 @@ A ChatGPT-like interface built with Next.js frontend and C# Web API backend, usi
 - **AI Service**: Azure OpenAI with GPT models
 - **Authentication**: Azure AD (optional)
 
+## Project Structure
+
+```
+voidbitzchat/
+├── backend/              # ASP.NET Core Web API
+│   ├── Controllers/      # API controllers
+│   ├── Data/            # Entity Framework DbContext
+│   ├── Models/          # Data models and DTOs
+│   ├── Services/        # Business logic services
+│   ├── Migrations/      # EF Core migrations
+│   └── Program.cs       # Application entry point
+├── frontend/            # Next.js React application
+│   ├── app/            # Next.js app router pages
+│   ├── components/     # React components
+│   ├── lib/            # Utility functions and API client
+│   └── types/          # TypeScript type definitions
+└── .vscode/            # VS Code configuration
+```
+
 ## Features
 
 - Real-time chat interface similar to ChatGPT
@@ -28,12 +47,46 @@ A ChatGPT-like interface built with Next.js frontend and C# Web API backend, usi
 - Azure subscription with OpenAI service
 - SQL Server (local or Azure)
 
-### Setup
+## Getting Started
 
-1. Clone the repository
-2. Configure backend settings in `appsettings.json`
-3. Run database migrations
-4. Install frontend dependencies
-5. Start both services
+### Prerequisites
 
-See individual README files in backend and frontend folders for detailed setup instructions.
+- .NET 8 SDK
+- Node.js 18+
+- Azure subscription with OpenAI service
+- SQL Server (local or Azure)
+
+### Quick Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd voidbitzchat
+   ```
+
+2. **Backend Setup**
+   ```bash
+   cd backend
+   dotnet restore
+   dotnet ef database update
+   dotnet run
+   ```
+   Backend will be available at `https://localhost:7061` and `http://localhost:5027`
+
+3. **Frontend Setup** (in a new terminal)
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   Frontend will be available at `http://localhost:3000`
+
+4. **Configure Azure OpenAI**
+   - Update `backend/appsettings.Development.json` with your Azure OpenAI credentials
+   - Set `AzureOpenAI:Endpoint`, `AzureOpenAI:DeploymentName`, and `AzureOpenAI:ApiKey`
+
+### VS Code Development
+
+Use the **"Start Full Stack"** task from VS Code's Command Palette (`Ctrl+Shift+P` → `Tasks: Run Task`) to run both frontend and backend simultaneously.
+
+For detailed setup instructions, see [DEVELOPMENT.md](DEVELOPMENT.md).

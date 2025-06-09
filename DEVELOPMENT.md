@@ -1,5 +1,23 @@
 # VoidBitz Chat - Development Setup
 
+## Project Structure
+
+The project has a simplified, flat structure for easy navigation:
+
+```
+voidbitzchat/
+├── backend/              # .NET API project (flattened from VoidBitzChat.Api)
+│   ├── Controllers/      # API endpoints
+│   ├── Data/            # Entity Framework DbContext
+│   ├── Models/          # Entity models and DTOs
+│   ├── Services/        # Business logic and repositories
+│   ├── Migrations/      # Database migrations
+│   ├── Program.cs       # Application startup
+│   └── *.csproj         # Project file
+├── frontend/            # Next.js application
+└── .vscode/            # VS Code tasks and launch configurations
+```
+
 ## Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
