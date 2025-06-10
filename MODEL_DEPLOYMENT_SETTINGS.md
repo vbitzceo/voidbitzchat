@@ -84,11 +84,7 @@ ModelDeployments
 - `NEXT_PUBLIC_API_URL` - Frontend API base URL (defaults to `http://localhost:5027/api`)
 
 ### Model Types Supported
-- gpt-4o
-- gpt-4
-- gpt-35-turbo
-- gpt-4-turbo
-- phi-3
+Most Azure Hosted chat completion models
 
 ## Usage
 
