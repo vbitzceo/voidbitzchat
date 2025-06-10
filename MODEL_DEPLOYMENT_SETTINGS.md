@@ -84,7 +84,7 @@ ModelDeployments
 - `NEXT_PUBLIC_API_URL` - Frontend API base URL (defaults to `http://localhost:5027/api`)
 
 ### Model Types Supported
-Most Azure Hosted chat completion models
+Most Azure hosted chat completion models
 
 ## Usage
 
