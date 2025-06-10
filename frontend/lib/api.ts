@@ -1,5 +1,17 @@
 import axios from 'axios';
-import { ChatSession, ChatSessionDetail, ChatMessage, CreateSessionRequest, ChatMessageRequest, UpdateSessionRequest, ModelDeployment } from '@/types/chat';
+import { 
+  ChatSession, 
+  ChatSessionDetail, 
+  ChatMessage, 
+  CreateSessionRequest, 
+  ChatMessageRequest, 
+  UpdateSessionRequest, 
+  ModelDeployment,
+  ModelDeploymentManagement,
+  CreateModelDeploymentRequest,
+  UpdateModelDeploymentRequest,
+  TestConnectionResult
+} from '@/types/chat';
 
 // API base URL - should be configurable via environment variables
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5027/api';
@@ -115,7 +127,6 @@ export class ChatApiService {
       throw new Error('API is not responding');
     }
   }
-
   /**
    * Get available model deployments
    */
@@ -126,6 +137,68 @@ export class ChatApiService {
     } catch (error) {
       console.error('Failed to fetch model deployments:', error);
       throw new Error('Failed to load model deployments');
+    }
+  }
+  /**
+   * Get all model deployments for management (settings page)
+   */
+  static async getAllModelDeployments(): Promise<ModelDeploymentManagement[]> {
+    try {
+      const response = await apiClient.get<ModelDeploymentManagement[]>('/modeldeployment');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch all model deployments:', error);
+      throw new Error('Failed to load model deployments');
+    }
+  }
+
+  /**
+   * Create a new model deployment
+   */
+  static async createModelDeployment(deployment: CreateModelDeploymentRequest): Promise<ModelDeploymentManagement> {
+    try {
+      const response = await apiClient.post<ModelDeploymentManagement>('/modeldeployment', deployment);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create model deployment:', error);
+      throw new Error('Failed to create model deployment');
+    }
+  }
+
+  /**
+   * Update a model deployment
+   */
+  static async updateModelDeployment(id: string, deployment: UpdateModelDeploymentRequest): Promise<void> {
+    try {
+      await apiClient.put(`/modeldeployment/${id}`, deployment);
+    } catch (error) {
+      console.error('Failed to update model deployment:', error);
+      throw new Error('Failed to update model deployment');
+    }
+  }
+
+  /**
+   * Delete a model deployment
+   */
+  static async deleteModelDeployment(id: string): Promise<void> {
+    try {
+      await apiClient.delete(`/modeldeployment/${id}`);
+    } catch (error) {
+      console.error('Failed to delete model deployment:', error);
+      throw new Error('Failed to delete model deployment');
+    }
+  }
+
+  /**
+   * Test model deployment connection
+   */
+  static async testModelDeployment(id: string): Promise<TestConnectionResult> {
+    try {
+      const response = await apiClient.post<TestConnectionResult>(`/modeldeployment/${id}/test`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to test model deployment:', error);
+      throw new Error('Failed to test model deployment');
     }
   }
 }

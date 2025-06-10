@@ -44,6 +44,11 @@ voidbitzchat/
 - Real-time chat interface similar to ChatGPT
 - **Custom Chat Naming**: Create chats with meaningful, custom titles
 - **Chat Management**: Rename existing chats, create, view, switch between sessions
+- **Model Deployment Settings**: Dynamic configuration of Azure OpenAI model deployments
+  - Add, edit, and delete model deployments through the UI
+  - Test connections to verify deployment configurations
+  - Set default models for new chat sessions
+  - Referential integrity protection (deployments in use cannot be deleted)
 - Complete chat history persistence with user-defined organization
 - Context isolation between sessions
 - Semantic Kernel integration for advanced AI capabilities
@@ -94,14 +99,28 @@ voidbitzchat/
    Frontend will be available at `http://localhost:3000`
 
 4. **Configure Azure OpenAI**
+   - Navigate to `/settings` in the application or
    - Update `backend/appsettings.Development.json` with your Azure OpenAI credentials
    - Set `AzureOpenAI:Endpoint`, `AzureOpenAI:DeploymentName`, and `AzureOpenAI:ApiKey`
+
+   **Recommended**: Use the Settings page in the application to manage model deployments dynamically without code changes.
 
 ### VS Code Development
 
 Use the **"Start Full Stack"** task from VS Code's Command Palette (`Ctrl+Shift+P` → `Tasks: Run Task`) to run both frontend and backend simultaneously.
 
 ## Using the Chat Application
+
+### Managing Model Deployments
+1. Click the **Settings** icon in the sidebar footer
+2. **Add New Deployment**: Click "Add New Deployment" and provide:
+   - Deployment name (for identification)
+   - Azure OpenAI endpoint URL
+   - Model deployment name 
+   - API key
+   - Set as default (optional)
+3. **Test Connection**: Click "Test" to verify the deployment works
+4. **Edit/Delete**: Modify existing deployments (cannot delete if referenced by chat sessions)
 
 ### Creating Named Chats
 1. Click the **"New Chat"** button in the sidebar
@@ -159,3 +178,5 @@ To implement user isolation, you only need to modify the `GetUserId()` method in
 This is a development/demo application. See [`DEVELOPMENT.md`](DEVELOPMENT.md) for implementation details and security considerations.
 
 For detailed setup instructions, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+For comprehensive model deployment settings documentation, see [MODEL_DEPLOYMENT_SETTINGS.md](MODEL_DEPLOYMENT_SETTINGS.md).

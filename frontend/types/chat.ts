@@ -47,6 +47,46 @@ export interface ModelDeployment {
   isDefault: boolean;
 }
 
+export interface ModelDeploymentManagement {
+  id: string;
+  name: string;
+  deploymentName: string;
+  endpoint: string;
+  modelType: string;
+  description?: string;
+  isActive: boolean;
+  isDefault: boolean;
+  isReferencedByChats: boolean;
+}
+
+export interface CreateModelDeploymentRequest {
+  name: string;
+  deploymentName: string;
+  endpoint: string;
+  apiKey: string;
+  modelType: string;
+  description?: string;
+  isActive: boolean;
+  isDefault: boolean;
+}
+
+export interface UpdateModelDeploymentRequest {
+  name: string;
+  deploymentName: string;
+  endpoint: string;
+  apiKey?: string;
+  modelType: string;
+  description?: string;
+  isActive: boolean;
+  isDefault: boolean;
+}
+
+export interface TestConnectionResult {
+  isSuccessful: boolean;
+  message: string;
+  responseTime?: number;
+}
+
 export interface ApiResponse<T> {
   data?: T;
   error?: string;

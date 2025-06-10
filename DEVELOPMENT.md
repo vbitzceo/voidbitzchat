@@ -158,6 +158,8 @@ Edit `backend/appsettings.Development.json`:
 }
 ```
 
+**Note**: Model deployments can now be managed dynamically through the Settings page instead of updating configuration files.
+
 ### Frontend Configuration
 The frontend automatically connects to the backend API running on `https://localhost:7267`.
 
@@ -165,6 +167,14 @@ To change the API URL, edit `frontend/lib/api.ts` and modify the `BASE_URL` cons
 
 ## Azure OpenAI Setup
 
+### Option 1: Using Settings Page (Recommended)
+1. Create an Azure OpenAI resource in the Azure portal
+2. Deploy a model (e.g., gpt-35-turbo or gpt-4)
+3. Navigate to `/settings` in the application
+4. Add a new model deployment with your Azure OpenAI details
+5. Test the connection to verify it works
+
+### Option 2: Configuration File
 1. Create an Azure OpenAI resource in the Azure portal
 2. Deploy a model (e.g., gpt-35-turbo or gpt-4)
 3. Update the configuration in `appsettings.Development.json`
@@ -172,6 +182,17 @@ To change the API URL, edit `frontend/lib/api.ts` and modify the `BASE_URL` cons
 For production, use Azure Managed Identity instead of API keys.
 
 ## Application Features
+
+### ✅ Model Deployment Settings
+- **Status**: Complete and tested
+- **Security**: ⚠️ **Affected by user isolation issue**
+- **Features**:
+  - Dynamic model deployment management through Settings UI
+  - Add, edit, delete model deployments without code changes
+  - Connection testing to verify deployments work
+  - Default model selection for new chats
+  - Referential integrity protection (deployments in use cannot be deleted)
+  - Secure API key handling (hidden in UI)
 
 ### ✅ Chat Naming System
 - **Status**: Complete and tested
@@ -209,6 +230,13 @@ The application supports comprehensive chat session management:
 - `PUT /api/chat/sessions/{id}` - Update session title
 - `GET /api/chat/sessions` - List user sessions with titles
 - `DELETE /api/chat/sessions/{id}` - Remove sessions
+
+### API Endpoints for Model Deployment Management
+- `GET /api/modeldeployment` - List all deployments with usage status
+- `POST /api/modeldeployment` - Create new deployment
+- `PUT /api/modeldeployment/{id}` - Update existing deployment
+- `DELETE /api/modeldeployment/{id}` - Delete deployment (with referential integrity protection)
+- `POST /api/modeldeployment/{id}/test` - Test connection to deployment
 
 ## Testing Considerations
 
@@ -303,3 +331,7 @@ azd init
 azd provision
 azd deploy
 ```
+
+## Additional Documentation
+
+For comprehensive documentation of the model deployment settings feature, see [`MODEL_DEPLOYMENT_SETTINGS.md`](MODEL_DEPLOYMENT_SETTINGS.md).

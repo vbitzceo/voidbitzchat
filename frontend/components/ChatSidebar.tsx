@@ -5,7 +5,8 @@ import { ChatSession } from '@/types/chat';
 import { ChatApiService } from '@/lib/api';
 import ChatSessionItem from './ChatSessionItem';
 import NewChatModal from './NewChatModal';
-import { Plus, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, MessageSquare, AlertCircle, Loader2, Settings } from 'lucide-react';
 
 interface ChatSidebarProps {
   selectedSessionId: string | null;
@@ -177,13 +178,20 @@ export default function ChatSidebar({
             ))}
           </div>
         )}
-      </div>
-
-      {/* Footer */}
+      </div>      {/* Footer */}
       <div className="p-4 border-gray-200 dark:border-gray-700 border-t">
-        <p className="text-gray-500 dark:text-gray-400 text-xs text-center">
-          Powered by Azure OpenAI & Semantic Kernel
-        </p>
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-gray-500 dark:text-gray-400 text-xs">
+            Powered by Azure OpenAI & Semantic Kernel
+          </p>
+          <Link 
+            href="/settings"
+            className="hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
 
       {/* New Chat Modal */}
